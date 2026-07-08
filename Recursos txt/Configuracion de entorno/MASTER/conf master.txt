@@ -1,0 +1,142 @@
+# Configuración del nodo Master
+
+El nodo **Master** será el encargado de administrar el clúster Spark, coordinar los recursos disponibles y asignar las tareas de procesamiento hacia los nodos **Worker**.
+
+> **Nota:** Esta configuración está enfocada principalmente para un entorno donde Ubuntu se encuentra instalado dentro de una máquina virtual (VMware o VirtualBox).
+> Si Ubuntu está instalado como sistema operativo principal o en una partición independiente, la configuración relacionada con la red virtual no es necesaria, ya que el sistema utilizará directamente la conexión física del equipo.
+
+---
+
+## 1. Instalación de Java (Requisito indispensable)
+
+Apache Spark requiere Java para poder ejecutarse correctamente.
+
+```bash
+sudo apt update
+sudo apt install default-jdk -y
+```
+
+---
+
+## 2. Descargar Apache Spark
+
+Se recomienda utilizar la misma versión de Spark en todos los nodos del clúster para evitar problemas de compatibilidad.
+
+Ejemplo:
+
+```bash
+wget https://dlcdn.apache.org/spark/spark-3.5.4/spark-3.5.4-bin-hadoop3.tgz
+```
+
+---
+
+## 3. Extraer y mover Spark
+
+Descomprimir el archivo descargado:
+
+```bash
+tar xvf spark-3.5.4-bin-hadoop3.tgz
+```
+
+Mover Spark a una ubicación estable del sistema:
+
+```bash
+sudo mv spark-3.5.4-bin-hadoop3 /opt/spark
+```
+
+---
+
+## 4. Configurar variables de entorno
+
+Para que el sistema pueda ejecutar los comandos de Spark desde cualquier ubicación, se deben configurar las variables de entorno.
+
+Abrir el archivo `.bashrc`:
+
+```bash
+nano ~/.bashrc
+```
+
+Agregar al final del archivo:
+
+```bash
+export SPARK_HOME=/opt/spark
+export PATH=$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin
+```
+
+Guardar los cambios:
+
+- `Ctrl + O` para guardar.
+- Presionar `Enter`.
+- `Ctrl + X` para salir.
+
+Aplicar la nueva configuración:
+
+```bash
+source ~/.bashrc
+```
+
+---
+
+## 5. Verificar la instalación de Spark
+
+Ejecutar:
+
+```bash
+spark-shell
+```
+
+Si la instalación fue correcta, aparecerá la consola interactiva de Spark con Scala.
+
+Para salir:
+
+```scala
+:quit
+```
+
+---
+
+## 6. Configuración de red (solo máquinas virtuales)
+
+Esta configuración permite que el nodo Master pueda comunicarse con los nodos Worker cuando estos se encuentran dentro de máquinas virtuales.
+
+### 6.1 Obtener la dirección IP del nodo Master
+
+Ejecutar:
+
+```bash
+hostname -I
+```
+
+Ejemplo de resultado:
+
+```
+192.168.1.10
+```
+
+Esta dirección será utilizada para identificar el nodo Master dentro del clúster.
+
+### 6.2 Configurar adaptador de red en VMware o VirtualBox
+
+Cuando Ubuntu se ejecuta dentro de una máquina virtual, se recomienda utilizar un adaptador puente (**Bridged Adapter**) para permitir la comunicación directa con otros dispositivos de la red.
+
+**Pasos:**
+
+1. Apagar completamente la máquina virtual.
+2. Abrir la configuración de red de VMware o VirtualBox.
+3. Cambiar el modo de conexión de **NAT** a **Adaptador Puente (Bridged Adapter)**.
+4. Seleccionar la tarjeta de red física del equipo:
+   - Wi-Fi.
+   - Ethernet.
+5. Guardar los cambios e iniciar nuevamente Ubuntu.
+
+Comprobar nuevamente la dirección IP:
+
+```bash
+hostname -I
+```
+
+Si se obtiene una IP válida, el nodo Master está listo para comunicarse con otros nodos.
+
+> En una instalación directa de Ubuntu (sistema principal o partición física), este paso no es necesario debido a que el sistema utiliza directamente la interfaz de red del equipo.
+
+
